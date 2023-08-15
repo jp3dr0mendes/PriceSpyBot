@@ -19,9 +19,9 @@ class PriceSpy:
         chrome_options.add_argument("--headless=new")
         chrome_options.add_argument("----disable-gpu")
 
-        # self.browser = webdriver.Chrome(options = chrome_options)
-        self.browser = webdriver.Chrome()
-        self.site =  'https://www.google.com'
+        self.browser = webdriver.Chrome(options = chrome_options)
+        # self.browser = webdriver.Chrome()
+        self.site    =  'https://www.google.com'
         self.headers = {
             'User-Agent':
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"
@@ -44,35 +44,20 @@ class PriceSpy:
             return
         
         self.user_product_search = 'mi band 5'
-        self.itens_list = self.search(self.user_product_search)
+        self.itens_list = self.url_search(self.user_product_search)
 
         if len(self.itens_list):
-            print('sucess:', len(self.itens_list))
+            print(f'urls catches: {len(self.itens_list)}')
         else:
             print('Error: Null')
-
-        # self.input.send_keys(self.user_product_search)
-        # self.input.send_keys(Keys.ENTER)
-
-        # time.sleep(3)
-
-        # site_html            = self.sopa(self.browser.current_url)
-
-        # #catch google shopping url
-        # site_html_div_search = site_html.find_all('div', class_='yuRUbf')        
-        # itens_url            = list()
-
-        # for div in site_html_div_search:
-        #     aux = div.find('a')
-        #     itens_url.append(aux['href'])
-
-        # site_html_div_search = site_html.find_all('a', class_='plantl pla-unit-title-link')
+            return
         
-        # #catch google normal url
-        # for a in site_html_div_search:
-        #     itens_url.append(a['href'])
+        self.price_search(self.itens_list)
 
+    #bs site html    
     def sopa(self, url:str):
+
+        time.sleep(random.randint(1,3))
 
         request =  requests.get(url,headers=self.headers)
 
@@ -82,33 +67,66 @@ class PriceSpy:
         else:
             print(f'Request Error: {request.status_code}')
             return None
+        
+    
+    def url_search(self, product:str) -> list():
 
-    def search(self, product:str) -> list():
         self.user_product_search = 'mi band 5'
 
         self.input.send_keys(self.user_product_search)
         self.input.send_keys(Keys.ENTER)
 
-        time.sleep(3)
-
-        site_html            = self.sopa(self.browser.current_url)
-
+        time.sleep(random.randint(1,5))
+        
         #catch google shopping url
-        site_html_div_search = site_html.find_all('div', class_='yuRUbf')        
-        itens_url            = list()
+        site_html                = self.sopa(self.browser.current_url)
+        site_html_div_search     = site_html.find_all('div', class_='yuRUbf')        
+        itens_url                = list()
 
         for div in site_html_div_search:
             aux = div.find('a')
             itens_url.append(aux['href'])
 
-        site_html_div_search = site_html.find_all('a', class_='plantl pla-unit-title-link')
+        site_html_div_search     = site_html.find_all('a', class_='plantl pla-unit-title-link')
         
         #catch google normal url
         for a in site_html_div_search:
             itens_url.append(a['href'])
         
         return itens_url
+    
+    #search price of site 
+    def price_search(self, sites: list) -> list:
         
+        time.sleep(random.randint(1,4))
+        self.browser.get(sites[0])
+        
+        site      = self.sopa(self.browser.current_url)
+        print(self.browser.current_url)
+
+        site_divs = site.find_all('div')
+        site_divs = self.browser.find_elements(By.XPATH,"//div[contains(@class, 'price')]")
+        print(site_divs)
+
+        for div in site_divs:
+            print(div.text)
+            try:
+                print(int(div.text))
+            except:
+                pass
+        
+        self.browser.back()
+        # verify = True
+        # while verify:
+        #     site      = self.sopa(sites[0])
+        #     site_divs = site.find_all('div')
+        #     for div in site_divs:
+        #         try:
+        #             if int(div.text) > 0:
+        #                 print(f'Price: {int(div.text)}')
+        #                 verify = False
+        #         except:
+        #             pass
 
 if __name__ == '__main__':
     PriceSpy('sla')
