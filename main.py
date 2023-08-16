@@ -10,6 +10,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
+import numpy as np
+
 class PriceSpy:
 
     def __init__(self, item = str,*args, **kwargs):
@@ -98,35 +100,43 @@ class PriceSpy:
     #search price of site 
     def price_search(self, sites: list) -> list:
         
-        time.sleep(random.randint(1,4))
-        self.browser.get(sites[0])
-        
-        site      = self.sopa(self.browser.current_url)
-        print(self.browser.current_url)
+        price_list = list()
 
-        site_divs = site.find_all('div')
-        site_divs = self.browser.find_elements(By.XPATH,"//div[contains(@class, 'price')]")
-        print(site_divs)
+        for site in sites:
 
-        for div in site_divs:
-            print(div.text)
+            time.sleep(random.randint(1,4))
+            self.browser.get(site)
+            letters            = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            print(self.browser.current_url)
+            site               = self.sopa(self.browser.current_url)
+            site_divs          = site.find_all('div')
+            site_divs          = self.browser.find_elements(By.XPATH,"//div[contains(@class, 'price')]")
+            site_divs_text     = [div.text.replace('\n','.') for div in site_divs]
+            site_divs_text     = [x.replace('R$','') for x in site_divs_text]
+            site_divs_text     = [x.replace(' ','') for x in site_divs_text]
+
+            for l in letters:
+                site_divs_text = [x.replace(l,'') for x in site_divs_text]
             try:
-                print(int(div.text))
+                price_list.append(float([x for x in site_divs_text if x != ''][0]))
             except:
-                pass
-        
-        self.browser.back()
-        # verify = True
-        # while verify:
-        #     site      = self.sopa(sites[0])
-        #     site_divs = site.find_all('div')
-        #     for div in site_divs:
-        #         try:
-        #             if int(div.text) > 0:
-        #                 print(f'Price: {int(div.text)}')
-        #                 verify = False
-        #         except:
-        #             pass
+                try:
+                    price_list.append([x for x in site_divs_text if x != ''][0].split('.')[1])
+                    price_list[-1] = float(price_list[-1].replace(',','.'))
+                    print(price_list)[-1]
+                    if '%' in price_list[-1]:
+                        price_list.pop() 
+                except:
+                    pass
+
+            print(price_list[-1])
+
+            try:
+                self.browser.back()
+            except:
+                break 
+            
+        print(price_list)
 
 if __name__ == '__main__':
     PriceSpy('sla')
