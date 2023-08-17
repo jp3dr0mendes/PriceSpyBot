@@ -10,8 +10,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 
-import numpy as np
-
 class PriceSpy:
 
     def __init__(self, item = str,*args, **kwargs):
@@ -48,7 +46,7 @@ class PriceSpy:
         self.user_product_search = 'mi band 5'
         self.itens_list = self.url_search(self.user_product_search)
 
-        if len(self.itens_list):
+        if len(self.itens_list) or self.itens_list is not None:
             print(f'urls catches: {len(self.itens_list)}')
         else:
             print('Error: Null')
@@ -73,8 +71,6 @@ class PriceSpy:
     
     def url_search(self, product:str) -> list():
 
-        self.user_product_search = 'mi band 5'
-
         self.input.send_keys(self.user_product_search)
         self.input.send_keys(Keys.ENTER)
 
@@ -85,15 +81,20 @@ class PriceSpy:
         site_html_div_search     = site_html.find_all('div', class_='yuRUbf')        
         itens_url                = list()
 
+        print(f'debug 1: {site_html_div_search}')
+
         for div in site_html_div_search:
             aux = div.find('a')
+            aux_h = aux['href']
             itens_url.append(aux['href'])
+        
+        print(f'lista de urls: {itens_url}')
 
-        site_html_div_search     = site_html.find_all('a', class_='plantl pla-unit-title-link')
+        # site_html_div_search     = site_html.find_all('a', class_='plantl pla-unit-title-link')
         
         #catch google normal url
-        for a in site_html_div_search:
-            itens_url.append(a['href'])
+        # for a in site_html_div_search:
+        #     itens_url.append(a['href'])
         
         return itens_url
     
@@ -107,7 +108,6 @@ class PriceSpy:
             time.sleep(random.randint(1,4))
             self.browser.get(site)
             letters            = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-            print(self.browser.current_url)
             site               = self.sopa(self.browser.current_url)
             site_divs          = site.find_all('div')
             site_divs          = self.browser.find_elements(By.XPATH,"//div[contains(@class, 'price')]")
